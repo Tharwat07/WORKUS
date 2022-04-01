@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "961744993017",
+    "project_id": "workos-f31de",
+    "storage_bucket": "workos-f31de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:961744993017:android:e8c09cc77d5cf7f47f4028",
+        "android_client_info": {
+          "package_name": "com.example.talabat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "961744993017-f5dr85pcvnevcco4jri991h50q59dg1g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWVQsDxHoVWVnUirT2N94Z_Hr3ro7PFD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "961744993017-f5dr85pcvnevcco4jri991h50q59dg1g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

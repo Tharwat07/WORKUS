@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'dart:ui';
+import 'package:flutter/material.dart';
+
+
 class Constant {
-static Color darkblue = Color(0x015C92) ;
-static Color darkred = Color.fromRGBO(150, 10, 20, 1);
+static Color darkblue = Color(0xFF00325C);
+static Color darkred = Colors.teal;
 
 static List<String> taskCatigoryList = [
   'Business',
@@ -22,8 +25,5 @@ static List<String> jobList = [
   'Designer',
   'Marketing',
   'Degital marketing'
-
 ];
-
-
 }

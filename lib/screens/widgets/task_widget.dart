@@ -1,9 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:talabat/constant/constants.dart';
 import 'package:talabat/inner_screens/task_details.dart';
+import 'package:talabat/services/global_methods.dart';
 
-class TaskWidget extends StatelessWidget {
-  const TaskWidget({Key? key}) : super(key: key);
+class TaskWidget extends StatefulWidget {
+  final String taskTitle;
+  final String taskId;
+  final String taskDescription;
+  final String uploadedBy;
+  final bool isDone;
+
+  const TaskWidget(
+      {required this.taskTitle,
+      required this.taskId,
+      required this.taskDescription,
+      required this.uploadedBy,
+      required this.isDone});
+
+  @override
+  _TaskWidgetState createState() => _TaskWidgetState();
+}
+
+class _TaskWidgetState extends State<TaskWidget> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +37,10 @@ class TaskWidget extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TaskDetailsScreen()),
+            MaterialPageRoute(builder: (context) => TaskDetailsScreen(
+              taskId:widget.taskId,
+              uploadBy:widget.uploadedBy ,
+            )),
           );
         },
         onLongPress: () {
@@ -28,13 +54,13 @@ class TaskWidget extends StatelessWidget {
           child: CircleAvatar(
             backgroundColor: Colors.transparent,
             radius: 20,
-            child: Image.network(
-              'https://image.shutterstock.com/image-vector/check-mark-brushed-600w-399970768.jpg',
-            ),
+            child: Image.network(widget.isDone
+                ? 'https://img.icons8.com/flat-round/344/checkmark.png'
+                : 'https://img.icons8.com/external-fauzidea-blue-fauzidea/344/external-alarm-back-to-school-fauzidea-blue-fauzidea.png'),
           ),
         ),
         title: Text(
-          "Title",
+          widget.taskTitle,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -43,12 +69,9 @@ class TaskWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(
-              Icons.linear_scale_outlined,
-              color: Color.fromRGBO(150, 10, 20, 1),
-            ),
+            Icon(Icons.linear_scale_outlined, color: Constant.darkred),
             Text(
-              'Subtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task descriptionSubtitle/task ',
+              widget.taskDescription,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16),
@@ -65,13 +88,40 @@ class TaskWidget extends StatelessWidget {
   }
 
   _ShowDialog(context) {
+    User? user = _auth.currentUser;
+    final _uid =user!.uid;
     showDialog(
         context: context,
         builder: (ctx) {
           return AlertDialog(
             actions: [
               TextButton(
-                onPressed: () {},
+                onPressed: () async {
+                  try {
+                    if (widget.uploadedBy == _uid){
+                    await FirebaseFirestore.instance
+                        .collection('tasks')
+                        .doc(widget.taskId)
+                        .delete();
+                    Navigator.canPop(ctx) ? Navigator.pop(ctx) : null;
+                    await  Fluttertoast.showToast(
+                        msg: "The Task has been deleted",
+                        toastLength: Toast.LENGTH_LONG,
+                        // gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 5,
+                        backgroundColor: Constant.darkblue,
+                        textColor: Colors.white,
+                        fontSize: 18.0);
+
+                    }else {
+                      GlobalMethods.showErrorDialog(
+                          error: 'You can\'t perform this action', context: context);
+                    }
+                  } catch (error) {
+                    GlobalMethods.showErrorDialog(
+                        error: 'This Task can\'t deleted', context: context);
+                  } finally {}
+                },
                 child: Row(
                   children: [
                     Icon(Icons.delete, color: Colors.red),

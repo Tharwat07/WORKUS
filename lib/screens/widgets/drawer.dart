@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:talabat/constant/constants.dart';
 import 'package:talabat/inner_screens/profile.dart';
 import 'package:talabat/inner_screens/upload_task.dart';
 import 'package:talabat/screens/all_workers.dart';
+import 'package:talabat/screens/tasks.dart';
+import 'package:talabat/screens/widgets/task_widget.dart';
+import 'package:talabat/user_state.dart';
 
 class DrawerW extends StatefulWidget {
   @override
@@ -10,26 +14,44 @@ class DrawerW extends StatefulWidget {
 }
 
 class _DrawerWState extends State<DrawerW> {
+
   @override
   Widget build(BuildContext context) {
-    return Drawer(
+    Size size = MediaQuery.of(context).size;
+  return Drawer(
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Colors.cyan),
+            decoration: BoxDecoration(color: Colors.teal),
             child: Column(
               children: [
                 Flexible(
-                  flex: 3,
-                  child: Image.network(
-                      'https://cdn.dribbble.com/users/1787323/screenshots/11310814/media/78d925f388bdfd914f5c84a30261e239.png?compress=1&resize=400x300'),
+                  flex: 2,
+                    child:
+                    Container(
+                      height: size.width * 0.50,
+                      width: size.width * 0.50,
+                      decoration: BoxDecoration(
+                        color: Colors.tealAccent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            width: 2,
+                            color:
+                            Theme.of(context).scaffoldBackgroundColor),
+                        image: DecorationImage(
+                            image: NetworkImage(
+                                'https://cdn.dribbble.com/users/1787323/screenshots/11310814/media/78d925f388bdfd914f5c84a30261e239.png?compress=1&resize=400x300'
+                        ),
+                            fit: BoxFit.fill),
+                      ),
+                    ),
                 ),
                 SizedBox(
                   height: 10,
                 ),
                 Flexible(
                   child: Text(
-                    "Mohamed Tharwat",
+                    "WORK US !!",
                     style: TextStyle(
                       color: Constant.darkblue,
                       fontSize: 22,
@@ -44,7 +66,7 @@ class _DrawerWState extends State<DrawerW> {
           SizedBox(
             height: 30,
           ),
-          _listTitle(lable: "All Tasks", fct: () {}, icon: Icons.task),
+          _listTitle(lable: "All Tasks", fct: () {_navigatorToAllTasks(context);}, icon: Icons.task),
           _listTitle(
               lable: "My account",
               fct: () {
@@ -78,6 +100,7 @@ class _DrawerWState extends State<DrawerW> {
   }
 
   void _logout(context) {
+    final FirebaseAuth _auth =FirebaseAuth.instance;
     showDialog(
         context: context,
         builder: (_) {
@@ -122,7 +145,16 @@ class _DrawerWState extends State<DrawerW> {
                 child: Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  _auth.signOut();
+                  Navigator.canPop(context) ? Navigator.pop(context) : null;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserState(),
+                    ),);
+
+                },
                 child: Text(
                   'Ok',
                   style: TextStyle(
@@ -135,6 +167,15 @@ class _DrawerWState extends State<DrawerW> {
         });
   }
 
+  void _navigatorToAllTasks(context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskScreen(),
+      ),
+    );
+  }
+
   void _navigatorToAllWorkers(context) {
     Navigator.push(
       context,
@@ -145,10 +186,13 @@ class _DrawerWState extends State<DrawerW> {
   }
 
   void _navigatorProfile(context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+final User? user = _auth.currentUser;
+final String uid = user!.uid;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProfileScreen(),
+        builder: (context) => ProfileScreen(userID:uid ,),
       ),
     );
   }

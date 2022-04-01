@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:talabat/constant/constants.dart';
 import 'package:talabat/constant/constants.dart';
@@ -12,14 +13,13 @@ class AllWorkers extends StatefulWidget {
 }
 
 class _AllWorkersState extends State<AllWorkers> {
-
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        drawer: DrawerW(),
         appBar: AppBar(
+
+          centerTitle: true,
           iconTheme: IconThemeData(
             color: Colors.white,
             size: 20,
@@ -29,14 +29,38 @@ class _AllWorkersState extends State<AllWorkers> {
           title: Text(
             "All Workers",
             style: TextStyle(
-              color: Color.fromRGBO(150, 10, 20, 1),
+              color: Colors.white,
             ),
           ),
-
         ),
-        body: ListView.builder(itemBuilder: (BuildContext context, int index) {
-          return WorkerWedgit();
-        }));
-  }
+        body: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.connectionState == ConnectionState.active) {
+                if (snapshot.data!.docs.isNotEmpty) {
+                 return ListView.builder(
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return WorkerWedgit(
+                          userID: snapshot.data!.docs[index]['id'],
+                          userEmail: snapshot.data!.docs[index]['email'],
+                          userName: snapshot.data!.docs[index]['name'],
+                          phoneNumber: snapshot.data!.docs[index]['phoneNumber'],
+                          image:snapshot.data!.docs[index]['userImage'] ,
+                          positionCompany: snapshot.data!.docs[index]['positionCompany'],
 
+
+                        );
+                      });
+                } else {
+                  return Center(
+                    child: Text('There is no users  !'),
+                  );
+                }
+              }
+              return Center(child: Text("Wrong"));
+            }));
+  }
 }

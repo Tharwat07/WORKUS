@@ -1,6 +1,9 @@
 import 'dart:io';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +11,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:talabat/constant/constants.dart';
 import 'package:talabat/screens/auth/login.dart';
+import 'package:talabat/services/global_methods.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -19,16 +23,16 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
-  late TextEditingController _emailController = TextEditingController(text: '');
-  late TextEditingController _phoneController = TextEditingController(text: '');
-  late TextEditingController _passController = TextEditingController(text: '');
-  late TextEditingController _nameController = TextEditingController(text: '');
-  late TextEditingController _positionController =
-      TextEditingController(text: '');
-
+  late TextEditingController _emailController = TextEditingController();
+  late TextEditingController _phoneController = TextEditingController();
+  late TextEditingController _passController = TextEditingController();
+  late TextEditingController _nameController = TextEditingController();
+  late TextEditingController _positionController = TextEditingController();
   bool _vis = true;
   final _signUpKey = GlobalKey<FormState>();
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+  String? imageurl;
   File? imageFile;
   FocusNode _emailFocusNode = FocusNode();
   FocusNode _passFocusNode = FocusNode();
@@ -57,34 +61,86 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
       duration: Duration(seconds: 20),
     );
     _animation =
-        CurvedAnimation(parent: _animationController, curve: Curves.linear)
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((animatinStatus) {
-            if (animatinStatus == AnimationStatus.completed) {
-              _animationController.reset();
-              _animationController.forward();
-            }
-          });
+    CurvedAnimation(parent: _animationController, curve: Curves.linear)
+      ..addListener(() {
+        setState(() {});
+      })
+      ..addStatusListener((animatinStatus) {
+        if (animatinStatus == AnimationStatus.completed) {
+          _animationController.reset();
+          _animationController.forward();
+        }
+      });
     _animationController.forward();
     super.initState();
   }
 
-  void _submitFormOnSignUp() {
+  void _submitFormOnSignUp() async {
     final isValid = _signUpKey.currentState!.validate();
-    if (isValid) {}
+    if (isValid) {
+      if (imageFile == null) {
+        GlobalMethods.showErrorDialog(
+            error: "Please pick an image", context: context);
+        return;
+      }
+      setState(() {
+        _isLoading = true;
+      });
+      try {
+        await _auth.createUserWithEmailAndPassword(
+            email: _emailController.text.trim().toLowerCase(),
+            password: _passController.text.trim());
+        final User ?user = _auth.currentUser;
+        final _uid = user!.uid;
+        final ref = FirebaseStorage.instance.ref().child('userImages').child(
+            _uid + '.png');
+        await ref.putFile(imageFile!);
+        imageurl = await ref.getDownloadURL();
+        FirebaseFirestore.instance.collection('users').doc(_uid).set({
+          'id': _uid,
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'userImage': imageurl,
+          'phoneNumber': _phoneController.text,
+          'positionCompany': _positionController.text,
+          'createAt': Timestamp.now(),
+        });
+        Fluttertoast.showToast(
+            msg: "Registeration Succeeded",
+            toastLength: Toast.LENGTH_LONG,
+            //gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Constant.darkblue,
+            textColor: Colors.white,
+            fontSize: 18.0);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
+      } catch (errorrr) {
+        setState(() {
+          _isLoading = false;
+        });
+        GlobalMethods.showErrorDialog(
+            error: errorrr.toString(), context: context);
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+    Size size = MediaQuery
+        .of(context)
+        .size;
     return Scaffold(
       body: Stack(
         children: [
           CachedNetworkImage(
             imageUrl:
-                "https://i1.wp.com/www.alphr.com/wp-content/uploads/2019/06/How-to-Set-a-Linkedin-Background-Photo.jpg?fit=1000%2C666&ssl=1",
+            "https://i1.wp.com/www.alphr.com/wp-content/uploads/2019/06/How-to-Set-a-Linkedin-Background-Photo.jpg?fit=1000%2C666&ssl=1",
             errorWidget: (context, url, error) => Icon(Icons.error),
             width: double.infinity,
             height: double.infinity,
@@ -111,31 +167,31 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                   ),
                   RichText(
                       text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Already have an account ?',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16),
-                      ),
-                      TextSpan(text: '   '),
-                      TextSpan(
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Login()),
-                              ),
-                        text: 'Login',
-                        style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            color: Colors.blue.shade300,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16),
-                      ),
-                    ],
-                  )),
+                        children: [
+                          TextSpan(
+                            text: 'Already have an account ?',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                          TextSpan(text: '   '),
+                          TextSpan(
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () =>
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Login()),),
+                            text: 'Login',
+                            style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                color: Colors.blue.shade300,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                        ],
+                      )),
                   SizedBox(
                     height: 40,
                   ),
@@ -149,8 +205,9 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                               flex: 2,
                               child: TextFormField(
                                 textInputAction: TextInputAction.next,
-                                onEditingComplete: () => FocusScope.of(context)
-                                    .requestFocus(_emailFocusNode),
+                                onEditingComplete: () =>
+                                    FocusScope.of(context)
+                                        .requestFocus(_emailFocusNode),
                                 keyboardType: TextInputType.name,
                                 controller: _nameController,
                                 validator: (value) {
@@ -189,17 +246,17 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(16),
                                       child: imageFile == null
                                           ? Image.network(
-                                              'https://img.icons8.com/external-others-ghozy-muhtarom/344/external-person-business-smooth-others-ghozy-muhtarom-2.png',
-                                              height: size.width * 0.24,
-                                              width: size.width * 0.24,
-                                              fit: BoxFit.fill,
-                                            )
+                                        'https://img.icons8.com/external-others-ghozy-muhtarom/344/external-person-business-smooth-others-ghozy-muhtarom-2.png',
+                                        height: size.width * 0.24,
+                                        width: size.width * 0.24,
+                                        fit: BoxFit.fill,
+                                      )
                                           : Image.file(
-                                              imageFile!,
-                                              height: size.width * 0.24,
-                                              width: size.width * 0.24,
-                                              fit: BoxFit.fill,
-                                            ),
+                                        imageFile!,
+                                        height: size.width * 0.24,
+                                        width: size.width * 0.24,
+                                        fit: BoxFit.fill,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -235,8 +292,9 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                         ),
                         TextFormField(
                           textInputAction: TextInputAction.next,
-                          onEditingComplete: () => FocusScope.of(context)
-                              .requestFocus(_passFocusNode),
+                          onEditingComplete: () =>
+                              FocusScope.of(context)
+                                  .requestFocus(_passFocusNode),
                           focusNode: _emailFocusNode,
                           keyboardType: TextInputType.emailAddress,
                           controller: _emailController,
@@ -263,8 +321,9 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                         ),
                         TextFormField(
                           textInputAction: TextInputAction.next,
-                          onEditingComplete: () => FocusScope.of(context)
-                              .requestFocus(_phoneFocusNode),
+                          onEditingComplete: () =>
+                              FocusScope.of(context)
+                                  .requestFocus(_phoneFocusNode),
                           focusNode: _passFocusNode,
                           keyboardType: TextInputType.visiblePassword,
                           obscureText: _vis,
@@ -304,8 +363,9 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                         SizedBox(height: 10),
                         TextFormField(
                           textInputAction: TextInputAction.next,
-                          onEditingComplete: () => FocusScope.of(context)
-                              .requestFocus(_positionFocusNode),
+                          onEditingComplete: () =>
+                              FocusScope.of(context)
+                                  .requestFocus(_positionFocusNode),
                           keyboardType: TextInputType.phone,
                           focusNode: _phoneFocusNode,
                           controller: _phoneController,
@@ -339,7 +399,6 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                           child: TextFormField(
                             enabled: false,
                             textInputAction: TextInputAction.done,
-                            onEditingComplete: () => _submitFormOnSignUp(),
                             focusNode: _positionFocusNode,
                             keyboardType: TextInputType.name,
                             controller: _positionController,
@@ -377,7 +436,13 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                   SizedBox(
                     height: 50,
                   ),
-                  MaterialButton(
+                  _isLoading
+                      ? Center(
+                       child: Container(
+                       child: CircularProgressIndicator(),
+                    ),
+                  )
+                      : MaterialButton(
                     color: Constant.darkred,
                     elevation: 8,
                     shape: RoundedRectangleBorder(
@@ -421,7 +486,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
       maxWidth: 1000,
       maxHeight: 10000,
     );
-    if(croppedImage !=null ){
+    if (croppedImage != null) {
       setState(() {
         imageFile = croppedImage;
       });

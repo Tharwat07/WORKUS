@@ -1,9 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:talabat/constant/constants.dart';
 import 'package:talabat/screens/auth/forget_password.dart';
+import 'package:talabat/services/global_methods.dart';
+import 'package:talabat/user_state.dart';
 import 'register.dart';
 
 class Login extends StatefulWidget {
@@ -21,6 +25,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   bool _vis = true;
   final _loginFormKey = GlobalKey<FormState>();
   FocusNode _passFocusNode = FocusNode();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+
 
   @override
   void dispose() {
@@ -52,9 +60,39 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     super.initState();
   }
 
-  void _submitFormOnLogin() {
-    final isValid = _loginFormKey.currentState!.validate();
-    if (isValid) {}
+  void _submitFormOnLogin() async {
+      final isValid = _loginFormKey.currentState!.validate();
+      if (isValid) {
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          await _auth.signInWithEmailAndPassword(
+              email: _emailController.text.trim().toLowerCase(),
+              password: _passController.text.trim());
+          Fluttertoast.showToast(
+              msg: "Login Succeed",
+              toastLength: Toast.LENGTH_LONG,
+              //gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Constant.darkblue,
+              textColor: Colors.white,
+              fontSize: 18.0);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserState()),
+          );
+        }
+        catch (errorrr) {
+          setState(() {
+            _isLoading = false;
+          });
+          GlobalMethods.showErrorDialog(error: errorrr.toString(), context: context);
+        }
+      }
+      setState(() {
+        _isLoading = false;
+      });
   }
 
   @override
@@ -64,7 +102,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       body: Stack(
         children: [
           CachedNetworkImage(
-            placeholder: (context, url) => CircularProgressIndicator(),
+ //           placeholder: (context, url) => CircularProgressIndicator(),
             imageUrl:
                 "https://i1.wp.com/www.alphr.com/wp-content/uploads/2019/06/How-to-Set-a-Linkedin-Background-Photo.jpg?fit=1000%2C666&ssl=1",
             errorWidget: (context, url, error) => Icon(Icons.error),
@@ -215,7 +253,13 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                 SizedBox(
                   height: 40,
                 ),
-                MaterialButton(
+                _isLoading
+                    ? Center(
+                  child: Container(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+                    :  MaterialButton(
                   color: Constant.darkred,
                   elevation: 8,
                   shape: RoundedRectangleBorder(
