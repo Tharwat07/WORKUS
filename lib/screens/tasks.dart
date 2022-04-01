@@ -45,15 +45,6 @@ class _TaskScreenState extends State<TaskScreen> {
               color: Colors.white,
             ),
           ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                _ShowTaskCategoryDialog(size: size);
-              },
-              icon: Icon(Icons.filter_list_outlined),
-              color: Colors.white,
-            )
-          ],
         ),
         body: Scaffold(
             drawer: DrawerW(),
@@ -92,60 +83,4 @@ class _TaskScreenState extends State<TaskScreen> {
             )));
   }
 
-  _ShowTaskCategoryDialog({required Size size}) {
-    showDialog(
-        context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: Text(
-              "Task Category",
-              style: TextStyle(
-                  fontSize: 20,
-                  color: Constant.darkblue,
-                  fontWeight: FontWeight.bold),
-            ),
-            content: Container(
-              width: size.width * 0.2,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: Constant.taskCatigoryList.length,
-                itemBuilder: (ctx, index) {
-                  return InkWell(
-                    onTap: () {
-                      print('TaskCategoryList, ${Constant
-                          .taskCatigoryList[index]}');
-                    },
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.check_circle_rounded,
-                          color: Constant.darkblue,
-                        ),
-                        //  SizedBox(width:10,),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(Constant.taskCatigoryList[index],
-                              style: TextStyle(
-                                fontStyle: FontStyle.italic,
-                                fontSize: 18,
-                                color: Constant.darkblue,
-                              )),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.canPop(context) ? Navigator.pop(context) : null;
-                },
-                child: Text('Close'),
-              ),
-            ],
-          );
-        });
-  }
 }

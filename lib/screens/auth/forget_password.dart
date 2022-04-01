@@ -60,7 +60,7 @@ class _ForgetState extends State<Forget>
       await FirebaseAuth.instance.sendPasswordResetEmail(
           email: _emailController.text.trim());
       Fluttertoast.showToast(
-          msg: "Password Reset Email Sent",
+          msg: "Password resent message sent",
           toastLength: Toast.LENGTH_LONG,
           //gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,

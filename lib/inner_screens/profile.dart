@@ -60,167 +60,187 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )
           : SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.only(top: 30),
+                padding: const EdgeInsets.only(top: 20),
                 child: Stack(
                   children: [
                     Card(
-                      margin: EdgeInsets.all(30),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 70,
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              name,
+                      shadowColor: Colors.black,
+                        color: Colors.blueGrey[300],
+                        margin: EdgeInsets.only(top: 30,right:10 ,left:10,bottom: 30 ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 70,
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                name,
+                                style: _Titlestyle,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                "$job ",
+                                style: _contentstyle,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                "Joined since $joinedAt",
+                                style: _contentstyle,
+                              ),
+                            ),
+
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Divider(
+                              thickness: 1,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              "Contact Info",
                               style: _Titlestyle,
                             ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "$job Since joined $joinedAt",
-                              style: _contentstyle,
+                            SizedBox(
+                              height: 15,
                             ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Divider(
-                            thickness: 1,
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            "Contact Info",
-                            style: _Titlestyle,
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: _userInfo(title: 'Email:', content: email),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: _userInfo(
-                                title: 'Phone number:', content: phoneNumber),
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          _isSameUser
-                              ? Container()
-                              : Divider(
-                                  thickness: 1,
-                                ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          _isSameUser
-                              ? Container()
-                              : Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    _contactBy(
-                                        color: Colors.green,
-                                        fct: () {
-                                          _openWhatsappChat();
+
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: _userInfo(title: 'Email:', content: email),
+                            ),
+
+                            SizedBox(
+                              height: 15,
+                            ),
+
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: _userInfo(
+                                  title: 'Phone number:', content: phoneNumber),
+                            ),
+                            SizedBox(
+                              height: 15,
+                            ),
+                            _isSameUser
+                                ? Container()
+                                : Divider(
+                                    thickness: 1,
+                                  ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            _isSameUser
+                                ? Container()
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      _contactBy(
+                                          color: Colors.green,
+                                          fct: () {
+                                            _openWhatsappChat();
+                                          },
+                                          icon: Icons.whatsapp),
+                                      _contactBy(
+                                          color: Colors.orange,
+                                          fct: () {
+                                            _mailTo();
+                                          },
+                                          icon: Icons.mail_rounded),
+                                      _contactBy(
+                                          color: Colors.purple,
+                                          fct: () {
+                                            _call();
+                                          },
+                                          icon: Icons.call),
+                                    ],
+                                  ),
+                            SizedBox(
+                              height: 30,
+                            ),
+                            !_isSameUser
+                                ? Container()
+                                : Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 30),
+                                      child: MaterialButton(
+                                        color: Constant.darkred,
+                                        elevation: 8,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        onPressed: () {
+                                          _auth.signOut();
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => UserState(),
+                                            ),
+                                          );
+
+                                          Navigator.canPop(context)
+                                              ? Navigator.pop(context)
+                                              : null;
+
                                         },
-                                        icon: Icons.whatsapp),
-                                    _contactBy(
-                                        color: Colors.orange,
-                                        fct: () {
-                                          _mailTo();
-                                        },
-                                        icon: Icons.mail_rounded),
-                                    _contactBy(
-                                        color: Colors.purple,
-                                        fct: () {
-                                          _call();
-                                        },
-                                        icon: Icons.call),
-                                  ],
-                                ),
-                          SizedBox(
-                            height: 30,
-                          ),
-                          !_isSameUser
-                              ? Container()
-                              : Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 30),
-                                    child: MaterialButton(
-                                      color: Constant.darkred,
-                                      elevation: 8,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                      onPressed: () {
-                                        _auth.signOut();
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => UserState(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.logout,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                "Logout",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20),
+                                              ),
+                                            ],
                                           ),
-                                        );
-
-                                        Navigator.canPop(context)
-                                            ? Navigator.pop(context)
-                                            : null;
-
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 14),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.logout,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              "Logout",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20),
-                                            ),
-                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          height: size.width * 0.20,
+                          height: size.width * 0.26,
                           width: size.width * 0.26,
                           decoration: BoxDecoration(
                             color: Colors.tealAccent,
                             shape: BoxShape.circle,
                             border: Border.all(
-                                width: 8,
+                                width: 2,
                                 color:
                                     Theme.of(context).scaffoldBackgroundColor),
                             image: DecorationImage(
@@ -274,7 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _openWhatsappChat() async {
-    var url = 'https://wa.me/+2$phoneNumber?text=helloWorld';
+    var url = 'https://wa.me/+2$phoneNumber';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -331,15 +351,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title,
           style: _Titlestyle,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Text(
+              content,
+              style: _contentstyle,
+            ),
           ),
-          child: Text(
-            content,
-            style: _contentstyle,
-          ),
-        ),
       ],
     );
   }
